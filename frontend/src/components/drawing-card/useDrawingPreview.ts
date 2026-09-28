@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Drawing, DrawingSummary } from "../../types";
-import { previewHasEmbeddedImages } from "../../utils/previewSvg";
 import * as api from "../../api";
 
 export type HydratedDrawingData = {
@@ -157,7 +156,6 @@ export const useDrawingPreview = (
 
   return {
     previewSvg,
-    hasEmbeddedImages: previewHasEmbeddedImages(previewSvg),
     buildExportDrawing,
   };
 };

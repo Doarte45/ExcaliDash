@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizePreviewSvg, previewHasEmbeddedImages } from "../previewSvg";
+import { normalizePreviewSvg } from "../previewSvg";
 
 describe("normalizePreviewSvg", () => {
   it("adds viewBox from background rect when missing", () => {
@@ -21,12 +21,6 @@ describe("normalizePreviewSvg", () => {
     const normalized = normalizePreviewSvg(raw);
 
     expect(normalized).toContain('viewBox="0 0 100 50"');
-  });
-
-  it("detects embedded image tags", () => {
-    const raw = '<svg><image href="data:image/png;base64,AAAA"></image></svg>';
-    expect(previewHasEmbeddedImages(raw)).toBe(true);
-    expect(previewHasEmbeddedImages("<svg><rect/></svg>")).toBe(false);
   });
 
   it("repairs flattened image previews that are hidden by white canvas rect", () => {

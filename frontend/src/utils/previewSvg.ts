@@ -61,10 +61,6 @@ const maybeRepairFlattenedImagePreview = (svg: SVGSVGElement) => {
   }
 };
 
-export const previewHasEmbeddedImages = (
-  preview: string | null | undefined
-): boolean => typeof preview === "string" && /<image[\s>]/i.test(preview);
-
 export const normalizePreviewSvg = (preview: string | null | undefined): string | null => {
   if (typeof preview !== "string" || preview.trim().length === 0) {
     return preview ?? null;

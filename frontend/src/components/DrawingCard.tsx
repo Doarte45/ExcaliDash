@@ -59,8 +59,10 @@ export const DrawingCard: React.FC<DrawingCardProps> = ({
   const [showStorageModal, setShowStorageModal] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
-  const { previewSvg, hasEmbeddedImages, buildExportDrawing } =
-    useDrawingPreview(drawing, onPreviewGenerated);
+  const { previewSvg, buildExportDrawing } = useDrawingPreview(
+    drawing,
+    onPreviewGenerated,
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -175,13 +177,12 @@ export const DrawingCard: React.FC<DrawingCardProps> = ({
         >
           <div className="absolute inset-0 opacity-[0.25] bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] [background-size:24px_24px]"></div>
 
+          {/* Dark mode inverts the whole preview, then inverts images back
+              (Excalidraw places them via <use>) so they keep their colors.
+              Only the root background rect is hidden, never mask rects. */}
           {previewSvg ? (
             <div
-              className={clsx(
-                "w-full h-full p-4 sm:p-5 flex items-center justify-center [&>svg]:w-auto [&>svg]:h-auto [&>svg]:max-w-full [&>svg]:max-h-full [&>svg]:drop-shadow-xs transition-transform duration-550",
-                !hasEmbeddedImages &&
-                  "dark:[&>svg]:invert dark:[&>svg_rect[fill='white']]:opacity-0 dark:[&>svg_rect[fill='#ffffff']]:opacity-0",
-              )}
+              className="w-full h-full p-4 sm:p-5 flex items-center justify-center [&>svg]:w-auto [&>svg]:h-auto [&>svg]:max-w-full [&>svg]:max-h-full [&>svg]:drop-shadow-xs transition-transform duration-550 dark:[&>svg]:invert dark:[&>svg_use]:invert dark:[&>svg>image]:invert dark:[&>svg>rect[fill='white']]:opacity-0 dark:[&>svg>rect[fill='#ffffff']]:opacity-0"
               dangerouslySetInnerHTML={{ __html: previewSvg }}
             />
           ) : (
