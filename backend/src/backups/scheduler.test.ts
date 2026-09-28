@@ -3,6 +3,7 @@ import os from "os";
 import path from "path";
 import { afterEach, describe, expect, it } from "vitest";
 
+import { PrismaClient } from "../generated/client";
 import {
   cronMatches,
   createSqliteBackup,
@@ -21,7 +22,7 @@ const makeTempDir = (): string => {
 
 // createSqliteBackup runs a WAL checkpoint through Prisma before copying; a
 // stub is enough because the copy itself reads the file via better-sqlite3.
-const stubPrisma = { $executeRawUnsafe: async () => 0 } as any;
+const stubPrisma = { $queryRawUnsafe: async () => [] } as any;
 
 afterEach(() => {
   while (tempDirs.length) {
@@ -116,6 +117,30 @@ describe("createSqliteBackup", () => {
     const row = restored.prepare("SELECT v FROM t WHERE id = 1").get();
     restored.close();
     expect(row.v).toBe("hello");
+  });
+
+  it("checkpoints the WAL through a real Prisma client", async () => {
+    // PRAGMA wal_checkpoint returns a row, which Prisma's $executeRaw rejects
+    // on SQLite; a stub can't catch that, so run it against a real client.
+    const srcDir = makeTempDir();
+    const backupDir = path.join(makeTempDir(), "backups");
+    const dbPath = seedDb(srcDir);
+    const prisma = new PrismaClient({
+      datasources: { db: { url: `file:${dbPath}` } },
+    });
+
+    try {
+      const target = await createSqliteBackup({
+        prisma,
+        databaseUrl: `file:${dbPath}`,
+        backupDir,
+        retentionDays: 14,
+      });
+      expect(target).not.toBeNull();
+      expect(fs.existsSync(target as string)).toBe(true);
+    } finally {
+      await prisma.$disconnect();
+    }
   });
 
   it("prunes backups older than the retention window", async () => {
