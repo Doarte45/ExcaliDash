@@ -66,6 +66,27 @@ export const resetSecuritySettings = (): void => {
 export const getSecurityConfig = (): SecurityConfig => {
   return { ...activeConfig };
 };
+/**
+ * Excalidraw exports labeled arrows through <mask>, images through
+ * <symbol>/<use>, and rounded images/frames through <clipPath>. Those
+ * references may only point inside the preview itself (`#id`), never at
+ * external documents.
+ */
+const LOCAL_URL_REFERENCE = /^url\(\s*#[\w-]+\s*\)$/i;
+const LOCAL_FRAGMENT_REFERENCE = /^#[\w-]+$/;
+purify.addHook("uponSanitizeAttribute", (node, data) => {
+  if (data.attrName === "mask" || data.attrName === "clip-path") {
+    if (!LOCAL_URL_REFERENCE.test(data.attrValue)) data.keepAttr = false;
+    return;
+  }
+  if (
+    (data.attrName === "href" || data.attrName === "xlink:href") &&
+    node.nodeName.toLowerCase() === "use" &&
+    !LOCAL_FRAGMENT_REFERENCE.test(data.attrValue)
+  ) {
+    data.keepAttr = false;
+  }
+});
 export const sanitizeSvg = (svgContent: string): string => {
   if (typeof svgContent !== "string") return "";
   const safeImageDataUrlPattern =
@@ -104,6 +125,10 @@ export const sanitizeSvg = (svgContent: string): string => {
         "svg",
         "defs",
         "pattern",
+        "mask",
+        "clipPath",
+        "symbol",
+        "use",
         "g",
         "image",
         "rect",
@@ -152,6 +177,8 @@ export const sanitizeSvg = (svgContent: string): string => {
         "opacity",
         "transform",
         "vector-effect",
+        "mask",
+        "clip-path",
         "patternUnits",
         "patternContentUnits",
         "font-size",
@@ -169,13 +196,9 @@ export const sanitizeSvg = (svgContent: string): string => {
         "iframe",
         "object",
         "embed",
-        "use",
         "style",
         "link",
-        "symbol",
         "marker",
-        "clipPath",
-        "mask",
         "filter",
       ],
       FORBID_ATTR: [
