@@ -393,6 +393,8 @@ backend:
     - /mnt/user/backups/excalidash:/app/backups
 ```
 
+The backend runs as UID 1001, so bind-mounted host directories must be writable by that user (for example `chown -R 1001:1001 /mnt/user/appdata/excalidash/prisma /mnt/user/backups/excalidash`). Named volumes are initialized with the right ownership automatically.
+
 For Unraid or other Docker templates, map the host directory to container path `/app/prisma` and keep `DATABASE_URL=file:/app/prisma/dev.db`; named volumes are harder to inspect and easier to accidentally recreate.
 
 </details>

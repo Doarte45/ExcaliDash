@@ -78,9 +78,9 @@ COPY --from=builder /app/prisma_clients ./prisma_clients
 
 # Prepare runtime-writable paths before dropping privileges. Named volumes
 # inherit this ownership on first use; bind mounts must be writable by UID 1001.
-RUN mkdir -p /app/uploads /app/prisma /app/dist/generated && \
+RUN mkdir -p /app/uploads /app/prisma /app/dist/generated /app/backups && \
     chown nodejs:nodejs /app/dist && \
-    chown -R nodejs:nodejs /app/uploads /app/prisma /app/dist/generated
+    chown -R nodejs:nodejs /app/uploads /app/prisma /app/dist/generated /app/backups
 
 # Do not inherit host filesystem modes for the executable entrypoint.
 COPY --chown=nodejs:nodejs --chmod=0555 backend/docker-entrypoint.sh ./

@@ -36,7 +36,7 @@ describe("Docker Prisma client startup", () => {
     expect(dockerfile).toMatch(/^USER nodejs$/m);
     expect(dockerfile).toContain("chown nodejs:nodejs /app/dist");
     expect(dockerfile).toContain(
-      "/app/uploads /app/prisma /app/dist/generated",
+      "/app/uploads /app/prisma /app/dist/generated /app/backups",
     );
     expect(entrypoint).toContain('if [ "$(id -u)" -eq 0 ]; then');
     expect(entrypoint).not.toContain("Fix permissions unconditionally");
